@@ -88,12 +88,28 @@ export const getById = async (req, res, next) => {
 };
 
 export const deleteList = async (req, res, next) => {
+  const { user } = req.body;
+
   const id = req.params.id;
+
+  let existingUser;
+  existingUser = await User.findById(user);
 
   let lists;
   try {
     lists = await AnimeList.findByIdAndRemove(id).populate("user");
-    await lists.user.list.pull(lists);
+    let updatedUserList = existingUser.list.filter(filterid => filterid != id);
+
+    await existingUser.updateOne({
+      list: updatedUserList
+    })
+
+    // const session = await mongoose.startSession();
+    // session.startTransaction();
+    // existingUser.list = updatedUserList;
+    // await existingUser.save({ session })
+    // await session.commitTransaction();
+
   } catch (err) {
     return console.log(err)
   }
